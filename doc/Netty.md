@@ -140,13 +140,17 @@ public class DiscardServer {
 }
 ```
 
-1. [`NioEventLoopGroup`] is a multithreaded event loop that handles I/O operation.  Netty provides various [`EventLoopGroup`] implementations for different kind of transports. We are implementing a server-side application in this example, and therefore two [`NioEventLoopGroup`] will be used. The first one, often called 'boss', accepts an incoming connection. The second one, often called 'worker', handles the traffic of the accepted connection once the boss accepts the connection and registers the accepted connection to the worker.  How many Threads are used and how they are mapped to the created [`Channel`]s depends on the [`EventLoopGroup`] implementation and may be even configurable via a constructor.
-1. [`ServerBootstrap`] is a helper class that sets up a server. You can set up the server using a [`Channel`] directly. However, please note that this is a tedious process, and you do not need to do that in most cases.
-1. Here, we specify to use the [`NioServerSocketChannel`] class which is used to instantiate a new [`Channel`] to accept incoming connections.
-1. The handler specified here will always be evaluated by a newly accepted [`Channel`]. The [`ChannelInitializer`] is a special handler that is purposed to help a user configure a new [`Channel`].  It is most likely that you want to configure the [`ChannelPipeline`] of the new [`Channel`] by adding some handlers such as `DiscardServerHandler` to implement your network application.  As the application gets complicated, it is likely that you will add more handlers to the pipeline and extract this anonymous class into a top-level class eventually.
-1. You can also set the parameters which are specific to the `Channel` implementation. We are writing a TCP/IP server, so we are allowed to set the socket options such as `tcpNoDelay` and `keepAlive`. Please refer to the apidocs of [`ChannelOption`] and the specific [`ChannelConfig`] implementations to get an overview about the supported `ChannelOption`s.
-1. Did you notice `option()` and `childOption()`?  `option()` is for the [`NioServerSocketChannel`] that accepts incoming connections. `childOption()` is for the [`Channel`]s accepted by the parent [`ServerChannel`], which is [`NioServerSocketChannel`] in this case.
-1. We are ready to go now. What's left is to bind to the port and to start the server. Here, we bind to the port `8080` of all NICs (network interface cards) in the machine. You can now call the `bind()` method as many times as you want (with different bind addresses.)
+1.  [`NioEventLoopGroup`] 是一个多线程的EventLoop,用来处理I/0操作.Netty提供了不同的 [`EventLoopGroup`] 实现.我们打算实现一个服务端的应用,所以会使用两个[`NioEventLoopGroup`].第一个EventLoopGroup,通常叫'boss',接收接入的请求,第二个EventLoopGroup,通常叫'worker',一旦boss接收到连接,就会注册这个连接到worker.[`Channel`]对应的线程数依赖[`EventLoopGroup`]的实现方式,也可以通过构造函数进行配置.
+2. [`ServerBootstrap`] 是一个配置服务端的帮助类,你可以直接用[`Channel`]配置服务端,但这个是一个枯燥的过程,大多数情况下,你不必这个样
+3. 当有新的连接接入时,这里我们用[`NioServerSocketChannel`]类去实例化一个[`Channel`]
+4. The handler specified here will always be evaluated by a newly accepted [`Channel`]. 
+The [`ChannelInitializer`] is a special handler that is purposed to help a user configure a new [`Channel`].  
+It is most likely that you want to configure the [`ChannelPipeline`] of the new [`Channel`] by adding some handlers such as `DiscardServerHandler` to implement your network application.  
+As the application gets complicated, 
+it is likely that you will add more handlers to the pipeline and extract this anonymous class into a top-level class eventually.
+5. You can also set the parameters which are specific to the `Channel` implementation. We are writing a TCP/IP server, so we are allowed to set the socket options such as `tcpNoDelay` and `keepAlive`. Please refer to the apidocs of [`ChannelOption`] and the specific [`ChannelConfig`] implementations to get an overview about the supported `ChannelOption`s.
+6. Did you notice `option()` and `childOption()`?  `option()` is for the [`NioServerSocketChannel`] that accepts incoming connections. `childOption()` is for the [`Channel`]s accepted by the parent [`ServerChannel`], which is [`NioServerSocketChannel`] in this case.
+7. We are ready to go now. What's left is to bind to the port and to start the server. Here, we bind to the port `8080` of all NICs (network interface cards) in the machine. You can now call the `bind()` method as many times as you want (with different bind addresses.)
 
 Congratulations! You've just finished your first server on top of Netty.
 
