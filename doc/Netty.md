@@ -140,7 +140,7 @@ public class DiscardServer {
 }
 ```
 
-1.  [`NioEventLoopGroup`] 是一个多线程的EventLoop,用来处理I/0操作.Netty提供了不同的 [`EventLoopGroup`] 实现.我们打算实现一个服务端的应用,所以会使用两个[`NioEventLoopGroup`].第一个EventLoopGroup,通常叫'boss',接收接入的请求,第二个EventLoopGroup,通常叫'worker',一旦boss接收到连接,就会注册这个连接到worker.[`Channel`]对应的线程数依赖[`EventLoopGroup`]的实现方式,也可以通过构造函数进行配置.
+1. [`NioEventLoopGroup`] 是一个多线程的Eve ntLoop,用来处理I/0操作.Netty提供了不同的 [`EventLoopGroup`] 实现.我们打算实现一个服务端的应用,所以会使用两个[`NioEventLoopGroup`].第一个EventLoopGroup,通常叫'boss',接收接入的请求,第二个EventLoopGroup,通常叫'worker',一旦boss接收到连接,就会注册这个连接到worker.[`Channel`]对应的线程数依赖[`EventLoopGroup`]的实现方式,也可以通过构造函数进行配置.
 2. [`ServerBootstrap`] 是一个配置服务端的帮助类,你可以直接用[`Channel`]配置服务端,但这个是一个枯燥的过程,大多数情况下,你不必这个样
 3. 当有新的连接接入时,这里我们用[`NioServerSocketChannel`]类去实例化一个[`Channel`]
 4. The handler specified here will always be evaluated by a newly accepted [`Channel`]. 
@@ -148,19 +148,11 @@ The [`ChannelInitializer`] is a special handler that is purposed to help a user 
 It is most likely that you want to configure the [`ChannelPipeline`] of the new [`Channel`] by adding some handlers such as `DiscardServerHandler` to implement your network application.  
 As the application gets complicated, 
 it is likely that you will add more handlers to the pipeline and extract this anonymous class into a top-level class eventually.
-5. You can also set the parameters which are specific to the `Channel` implementation. We are writing a TCP/IP server, so we are allowed to set the socket options such as `tcpNoDelay` and `keepAlive`. Please refer to the apidocs of [`ChannelOption`] and the specific [`ChannelConfig`] implementations to get an overview about the supported `ChannelOption`s.
-6. Did you notice `option()` and `childOption()`?  `option()` is for the [`NioServerSocketChannel`] that accepts incoming connections. `childOption()` is for the [`Channel`]s accepted by the parent [`ServerChannel`], which is [`NioServerSocketChannel`] in this case.
-7. We are ready to go now. What's left is to bind to the port and to start the server. Here, we bind to the port `8080` of all NICs (network interface cards) in the machine. You can now call the `bind()` method as many times as you want (with different bind addresses.)
+5. 你也可以设置一些参数,去配置`Channel`的实现.我们正在写TCP/IP的服务,所以我们允许设置socket的配置,比如`tcpNoDelay`和`keepAlive`.请参考[`ChannelOption`]和[`ChannelConfig`]来配置`ChannelOption`
+6. 注意到 `option()` 和 `childOption()`了吗?  `option()` 是配置[`NioServerSocketChannel`]的,接收接入的请求.`childOption()` 是配置 [`Channel`]的,由父级 [`ServerChannel`]接入, 在这个例子中也是[`NioServerSocketChannel`]
+7. 剩下的就是绑定端口和启动方服务了,这里我们绑定了机器上所有网卡的`8080`端口,你也可以调用`bind()`去绑定不同的端口
 
-Congratulations! You've just finished your first server on top of Netty.
-
-### Looking into the Received Data
-
-Now that we have written our first server, we need to test if it really works. The easiest way to test it is to use the *telnet* command. For example, you could enter `telnet localhost 8080` in the command line and type something.
-
-However, can we say that the server is working fine? We cannot really know that because it is a discard server. You will not get any response at all. To prove it is really working, let us modify the server to print what it has received.
-
-We already know that `channelRead()` method is invoked whenever data is received. Let us put some code into the `channelRead()` method of the `DiscardServerHandler`:
+### Looking into the Received Data 查看接收到的数据Data
 
 ```java
 @Override
@@ -177,18 +169,12 @@ public void channelRead(ChannelHandlerContext ctx, Object msg) {
 }
 ```
 
-1. This inefficient loop can actually be simplified to: `System.out.println(in.toString(io.netty.util.CharsetUtil.US_ASCII))`
-1. Alternatively, you could do `in.release()` here.
+1. 这个低效的循环可以被简化成: `System.out.println(in.toString(io.netty.util.CharsetUtil.US_ASCII))`
+2. 你可以用`in.release()`代替
 
-If you run the *telnet* command again, you will see the server prints what it has received.
+完整的源代码可以在[`io.netty.example.discard`]中找到
 
-The full source code of the discard server is located in the [`io.netty.example.discard`] package of the distribution.
-
-### Writing an Echo Server
-
-So far, we have been consuming data without responding at all. A server, however, is usually supposed to respond to a request. Let us learn how to write a response message to a client by implementing the [`ECHO`](http://tools.ietf.org/html/rfc862) protocol, where any received data is sent back.
-
-The only difference from the discard server we have implemented in the previous sections is that it sends the received data back instead of printing the received data out to the console. Therefore, it is enough again to modify the `channelRead()` method:
+### Writing an Echo Server 完成一个EchoServer
 
 ```java
     @Override
@@ -198,12 +184,11 @@ The only difference from the discard server we have implemented in the previous 
     }
 ```
 
-1. A [`ChannelHandlerContext`] object provides various operations that enable you to trigger various I/O events and operations.  Here, we invoke `write(Object)` to write the received message in verbatim.  Please note that we did not release the received message unlike we did in the `DISCARD` example.  It is because Netty releases it for you when it is written out to the wire.
-1. `ctx.write(Object)` does not make the message written out to the wire.  It is buffered internally and then flushed out to the wire by `ctx.flush()`.  Alternatively, you could call `ctx.writeAndFlush(msg)` for brevity.
+1. [`ChannelHandlerContext`]对象提供了不同的操作,能够使你调用不同的I/O事件和操作.这里我们调用`write(Object)`把接收到的信息逐字的写回去.这里要注意的是,我们没有像`DISCARD`例子那样释放接收到的信息,因为Netty在我们调用write的时候会自动为我们释放.
 
-If you run the *telnet* command again, you will see the server sends back whatever you have sent to it.
+2. `ctx.write(Object)` 会暂时的缓存write的内容,`ctx.flush()`会触发flush过程.你也可以调用替代`ctx.writeAndFlush(msg)`.
 
-The full source code of the echo server is located in the [`io.netty.example.echo`] package of the distribution.
+完整的源代码可以在[`io.netty.example.echo`]中找到
 
 ### Writing a Time Server
 
