@@ -1,6 +1,6 @@
-## Preface 前言
+## 前言
 
-### The Problem 问题
+### 问题
 
 当今,我们使用一些`通用目的的应用或者类库`去和其他用户进行交流.
 
@@ -11,7 +11,7 @@
 还有一些需要特别优化的其他协议去实现这些功能.比如,基于HTPP的聊天应用,流媒体,大文件传输.你甚至可能想去设计和实现一个全新的协议,去精确定制你的需求.
 
 
-## The Solution 解决方案
+## 解决方案
 
 Netty致力于提供一个异步事件驱动的网络应用框架,快速的搭建一个可维护的高性能和高伸缩性协议的服务端和客户端.
 
@@ -19,13 +19,13 @@ Netty致力于提供一个异步事件驱动的网络应用框架,快速的搭�
 
 '快速和简单'并不意味着利用Netty搭建的应用会有维护性或者性能问题.Netty借鉴了很多,能够做的很好 
 
-## Getting Started 开始
+## 开始
 
 这个章节将简单的介绍Netty的examples,并且让你能够快速的使用netty.结束本章的阅读之后,你能够立即完成一个client和server
 
 如果你想了解一下Netty框架自上而下的一些内容的话,你可以去访问一下 [Chapter 2, Architectural Overview](https://netty.io/3.8/guide/#architecture)
 
-### Writing a Discard Server 完成一个 Discard(抛弃) Server
+### 完成一个 Discard(抛弃) Server
 
 这个世界上最简单的协议不是'HelloWorld'!而是 [`DISCARD`](http://tools.ietf.org/html/rfc863). 这个协议抛弃任何接收到的数据,没有任何返回
 
@@ -152,7 +152,7 @@ it is likely that you will add more handlers to the pipeline and extract this an
 6. 注意到 `option()` 和 `childOption()`了吗?  `option()` 是配置[`NioServerSocketChannel`]的,接收接入的请求.`childOption()` 是配置 [`Channel`]的,由父级 [`ServerChannel`]接入, 在这个例子中也是[`NioServerSocketChannel`]
 7. 剩下的就是绑定端口和启动方服务了,这里我们绑定了机器上所有网卡的`8080`端口,你也可以调用`bind()`去绑定不同的端口
 
-### Looking into the Received Data 查看接收到的数据Data
+### 查看接收到的数据Data
 
 ```java
 @Override
@@ -174,7 +174,7 @@ public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
 完整的源代码可以在[`io.netty.example.discard`]中找到
 
-### Writing an Echo Server 完成一个EchoServer
+### 完成一个EchoServer
 
 ```java
     @Override
@@ -190,11 +190,11 @@ public void channelRead(ChannelHandlerContext ctx, Object msg) {
 
 完整的源代码可以在[`io.netty.example.echo`]中找到
 
-### Writing a Time Server
+### 完成一个时间服务
 
-The protocol to implement in this section is the [`TIME`](http://tools.ietf.org/html/rfc868) protocol. It is different from the previous examples in that it sends a message, which contains a 32-bit integer, without receiving any requests and closes the connection once the message is sent. In this example, you will learn how to construct and send a message, and to close the connection on completion.
+时间服务,不同于之前的地方在于,发送一个32比特整数,不接受任何请求数据,发送数据后直接关闭消息. 
 
-Because we are going to ignore any received data but to send a message as soon as a connection is established, we cannot use the `channelRead()` method this time. Instead, we should override the `channelActive()` method. The following is the implementation: 
+因为我们需要忽略到所有接收到的消息,当连接建立时,尽可能快的发送消息.所以这次我们不能用`channelRead()`.我们应该重写`channelActive()`方法.
 
 ```java
 package io.netty.example.time;
@@ -224,44 +224,33 @@ public class TimeServerHandler extends ChannelInboundHandlerAdapter {
 }
 ```
 
-1. As explained, the `channelActive()` method will be invoked when a connection is established and ready to generate traffic.  Let's write a 32-bit integer that represents the current time in this method.
-1. To send a new message, we need to allocate a new buffer which will contain the message. We are going to write a 32-bit integer, and therefore we need a [`ByteBuf`] whose capacity is at least 4 bytes. Get the current [`ByteBufAllocator`] via `ChannelHandlerContext.alloc()` and allocate a new buffer.
-1. As usual, we write the constructed message.
+1. 当连接建立的时候,`channelActive()`将会被调用
+2. 为了发送消息,我们需要分配一个新的buffer去装载消息,因为我们需要输出一个32比特的整数,所以我们的[`ByteBuf`]容量至少是4字节.通过`ChannelHandlerContext.alloc()`方法可以获得[`ByteBufAllocator`]
+3. 像通常一样,我们输出了构造好的消息.但是,为什么在发送消息之前,我们没有调用`java.nio.ByteBuffer.flip()`呢?`ByteBuf`没有这个方法因为它有两个指针,一个是读的,一个是写的.
 
-   But wait, where's the flip? Didn't we used to call `java.nio.ByteBuffer.flip()` before sending a message in NIO? `ByteBuf` does not have such a method because it has two pointers; one for read operations and the other for write operations. The writer index increases when you write something to a `ByteBuf` while the reader index does not change. The reader index and the writer index represents where the message starts and ends respectively.
-
-   In contrast, NIO buffer does not provide a clean way to figure out where the message content starts and ends without calling the flip method. You will be in trouble when you forget to flip the buffer because nothing or incorrect data will be sent. Such an error does not happen in Netty because we have different pointer for different operation types. You will find it makes your life much easier as you get used to it -- a life without flipping out!
-
-   Another point to note is that the `ChannelHandlerContext.write()` (and `writeAndFlush()`) method returns a [`ChannelFuture`]. A [`ChannelFuture`] represents an I/O operation which has not yet occurred. It means, any requested operation might not have been performed yet because all operations are asynchronous in Netty. For example, the following code might close the connection even before a message is sent:
-
+   另一个注意点是`ChannelHandlerContext.write()`和`ChannelHandlerContext.writeAndFlush()`方法返回的[`ChannelFuture`].[`ChannelFuture`]代表了I/O操作还没有发生,因为在Netty中,所有的操作都是异步的.
+   
+   下面的例子可能会发生关闭连接在发送消息之前:
+   
    ```java
    Channel ch = ...;
    ch.writeAndFlush(message);
    ch.close();
    ```
 
-   Therefore, you need to call the `close()` method after the [`ChannelFuture`] is complete, which was returned by the `write()` method, and it notifies its listeners when the write operation has been done. Please note that, `close()` also might not close the connection immediately, and it returns a [`ChannelFuture`].
+   因此你需要在`write()`返回的[`ChannelFuture`]完成事件之后,调用`close()`方法.值得一提的是,`close()`方法也不会立即关闭连接,它返回的还是一个[`ChannelFuture`].
 
-1. How do we get notified when a write request is finished then? This is as simple as adding a [`ChannelFutureListener`] to the returned `ChannelFuture`. Here, we created a new anonymous [`ChannelFutureListener`] which closes the `Channel` when the operation is done.
-
-   Alternatively, you could simplify the code using a pre-defined listener:
+4. 最简单的方法去获得write请求完成的通知,就是在返回的`ChannelFuture`上新增一个[`ChannelFutureListener`].
+   
+   这里我们创建了一个匿名的[`ChannelFutureListener`],你也可以使用内置的一个Listener:
 
    ```java
    f.addListener(ChannelFutureListener.CLOSE);
    ```
 
-To test if our time server works as expected, you can use the UNIX `rdate` command: 
+### 完成一个时间客户端
 
-```
-$ rdate -o <port> -p <host>
-```
-where `<port>` is the port number you specified in the `main()` method and `<host>` is usually `localhost`. 
-
-### Writing a Time Client
-
-Unlike `DISCARD` and `ECHO` servers, we need a client for the `TIME` protocol because a human cannot translate a 32-bit binary data into a date on a calendar. In this section, we discuss how to make sure the server works correctly and learn how to write a client with Netty.
-
-The biggest and only difference between a server and a client in Netty is that different [`Bootstrap`] and [`Channel`] implementations are used. Please take a look at the following code:
+Netty服务端和客户端最大的不同点在于[`Bootstrap`]和[`Channel`]的实现:
 
 ```java
 package io.netty.example.time;
@@ -296,11 +285,11 @@ public class TimeClient {
 }
 ```
 
-1. [`Bootstrap`] is similar to [`ServerBootstrap`] except that it's for non-server channels such as a client-side or connectionless channel.
-1. If you specify only one [`EventLoopGroup`], it will be used both as a boss group and as a worker group. The boss worker is not used for the client side though.
-1. Instead of [`NioServerSocketChannel`], [`NioSocketChannel`] is being used to create a client-side [`Channel`].
-1. Note that we do not use `childOption()` here unlike we did with `ServerBootstrap` because the client-side [`SocketChannel`] does not have a parent.
-1. We should call the `connect()` method instead of the `bind()` method. 
+1. [`Bootstrap`]和[`ServerBootstrap`]相似,除了它是用来生成非服务端的Channel,比如一个客户端或者无连接的channel.
+2. 如果只指定一个[`EventLoopGroup`],它将会把这个group同时给boos和worker用,boss worker在客户端是没有什么用处的.
+3. [`NioSocketChannel`]被用来创建客户端的[`Channel`],替代之前的[`NioServerSocketChannel`].
+4. 注意这里我们不用`childOption()`,因为客户端的[`SocketChannel`]没有parent
+5. 这里我们用 `connect()` 方法替换之前的`bind()` 方法
 
 As you can see, it is not really different from the server-side code. What about the [`ChannelHandler`] implementation? It should receive a 32-bit integer from the server, translate it into a human-readable format, print the translated time, and close the connection: 
 
