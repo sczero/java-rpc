@@ -291,7 +291,7 @@ public class TimeClient {
 4. 注意这里我们不用`childOption()`,因为客户端的[`SocketChannel`]没有parent
 5. 这里我们用 `connect()` 方法替换之前的`bind()` 方法
 
-As you can see, it is not really different from the server-side code. What about the [`ChannelHandler`] implementation? It should receive a 32-bit integer from the server, translate it into a human-readable format, print the translated time, and close the connection: 
+如何实现[`ChannelHandler`]呢?
 
 ```java
 package io.netty.example.time;
@@ -319,13 +319,12 @@ public class TimeClientHandler extends ChannelInboundHandlerAdapter {
 }
 ```
 
-1. In TCP/IP, Netty reads the data sent from a peer into a [`ByteBuf`].
+1. 在 TCP/IP中, Netty解析data生成[`ByteBuf`].
+这看起来十分简单,和服务端的代码并没有什么不同.然后这个handler有时候会拒绝工作,并且抛出`IndexOutOfBoundsException`.我们将在下一章节讨论为什么会发生这种情况.
 
-It looks very simple and does not look any different from the server side example. However, this handler sometimes will refuse to work raising an `IndexOutOfBoundsException`. We discuss why this happens in the next section. 
+### 处理流基础的协议(Stream-Based) 
 
-### Dealing with a Stream-based Transport 
-
-#### One Small Caveat of Socket Buffer
+#### 一个小的警告关于Socket Buffer
 
 In a stream-based transport such as TCP/IP, received data is stored into a socket receive buffer. Unfortunately, the buffer of a stream-based transport is not a queue of packets but a queue of bytes. It means, even if you sent two messages as two independent packets, an operating system will not treat them as two messages but as just a bunch of bytes. Therefore, there is no guarantee that what you read is exactly what your remote peer wrote. For example, let us assume that the TCP/IP stack of an operating system has received three packets: 
 
