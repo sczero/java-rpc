@@ -599,3 +599,13 @@ Please also note that [the community](http://netty.io/community.html) is always 
 [`io.netty.example.echo`]: http://netty.io/4.1/xref/io/netty/example/echo/package-summary.html
 [`io.netty.example.factorial`]: http://netty.io/4.1/xref/io/netty/example/factorial/package-summary.html
 [`io.netty.example.telnet`]: http://netty.io/4.1/xref/io/netty/example/telnet/package-summary.html
+
+```
+ChannelInboundHandlerAdapter <- ByteToMessageDecoder <- DelimiterBasedFrameDecoder
+ChannelInboundHandlerAdapter <- ByteToMessageDecoder <- ReplayingDecoder<T>
+ChannelInboundHandlerAdapter <- MessageToMessageDecoder<T> <- StringDecoder
+ChannelInboundHandlerAdapter <- SimpleChannelInboundHandler<T>
+
+ChannelOutboundHandlerAdapter <- MessageToByteEncoder<T>
+ChannelOutboundHandlerAdapter <- MessageToMessageEncoder<T> <- StringEncoder
+```
