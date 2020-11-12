@@ -602,6 +602,8 @@ Please also note that [the community](http://netty.io/community.html) is always 
 
 ```
 ChannelInboundHandlerAdapter <- ByteToMessageDecoder <- DelimiterBasedFrameDecoder
+ChannelInboundHandlerAdapter <- ByteToMessageDecoder <- FixedLengthFrameDecoder
+ChannelInboundHandlerAdapter <- ByteToMessageDecoder <- LengthFieldBasedFrameDecoder
 ChannelInboundHandlerAdapter <- ByteToMessageDecoder <- ReplayingDecoder<T>
 ChannelInboundHandlerAdapter <- MessageToMessageDecoder<T> <- StringDecoder
 ChannelInboundHandlerAdapter <- SimpleChannelInboundHandler<T>
