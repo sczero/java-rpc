@@ -1,19 +1,25 @@
 package com.github.sczero.java.rpc.server;
 
+import com.github.sczero.java.rpc.utils.ClassUtil;
+import com.github.sczero.java.rpc.utils.ExceptionUtil;
+import com.github.sczero.java.rpc.utils.HessianUtil;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 
+import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RpcServer {
-    private final ConcurrentHashMap<Object, Object> factory = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Class<?>, Object> factory = new ConcurrentHashMap<>();
 
     public RpcServer register(Class<?> clazz, Object object) {
         factory.put(clazz, object);
@@ -31,8 +37,9 @@ public class RpcServer {
                         @Override
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ch.pipeline()
+                                    .addLast(new LoggingHandler(LogLevel.DEBUG))
                                     .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4))
-                                    .addLast(new RpcServerHandler());
+                                    .addLast(new RpcServerHandler(factory));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)

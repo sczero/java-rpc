@@ -8,6 +8,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
@@ -40,16 +42,21 @@ public class RpcClient {
                             @Override
                             protected void initChannel(SocketChannel ch) throws Exception {
                                 ch.pipeline()
+                                        .addLast(new LoggingHandler(LogLevel.DEBUG))
                                         .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4))
                                         .addLast(rpcClientHandler);
                             }
                         });
+                System.out.println("1111111111111");
                 ChannelFuture channelFuture = bootstrap.connect(addr, port).sync();
+                System.out.println("2222222222222");
                 channelFuture.channel().closeFuture().sync();
             } finally {
+                System.out.println("3333333333333");
                 eventLoopGroup.shutdownGracefully();
             }
-            return rpcClientHandler.getResult().join();
+            System.out.println("44444444444444444");
+            return rpcClientHandler.getResult();
         });
         return (T) instance;
     }
