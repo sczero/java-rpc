@@ -11,6 +11,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,9 +48,10 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
         String exceptionMsg = null;
         try {
             resultObject = method.invoke(factory.get(clazz), paramObjArr);
-        } catch (Exception e) {
-            exceptionClazz = e.getClass();
-            exceptionMsg = ExceptionUtil.getStackTrace(e);
+        } catch (InvocationTargetException e) {
+            Throwable targetException = e.getTargetException();
+            exceptionClazz = targetException.getClass();
+            exceptionMsg = ExceptionUtil.getStackTrace(targetException);
         }
         System.out.println("调用方法结果:" + resultObject);
         System.out.println("调用方法异常:" + exceptionClazz);
@@ -62,6 +64,7 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
         payloadLength += (RpcConstant.INT_SIZE);
         if (exceptionClazz != null && exceptionMsg != null) {
             buf.writeBoolean(false);//异常
+            payloadLength += (RpcConstant.BOOL_SIZE);
 
             byte[] exceptionClazzBytes = exceptionClazz.getName().getBytes();//异常类
             buf.writeInt(exceptionClazzBytes.length);
@@ -76,9 +79,11 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
         } else {
             //正常
             buf.writeBoolean(true);
+            payloadLength += (RpcConstant.BOOL_SIZE);
 
             if (resultObject == null) {
                 buf.writeInt(0);
+                payloadLength += (RpcConstant.INT_SIZE);
             } else {
                 String objName = resultObject.getClass().getName();
                 byte[] objNameBytes = objName.getBytes();

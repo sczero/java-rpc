@@ -15,17 +15,13 @@ import java.lang.reflect.Proxy;
 import java.util.Arrays;
 
 public class RpcClient {
-    private String addr;
-    private int port;
+    private final String addr;
+    private final int port;
 
     public RpcClient(String addr, int port) {
         this.addr = addr;
         this.port = port;
     }
-
-//    public void send(String addr, int port) throws InterruptedException {
-
-//    }
 
     public <T> T getService(Class<T> clazz) {
         Object instance = Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{clazz}, (proxy, method, args) -> {
@@ -42,20 +38,15 @@ public class RpcClient {
                             @Override
                             protected void initChannel(SocketChannel ch) throws Exception {
                                 ch.pipeline()
-                                        .addLast(new LoggingHandler(LogLevel.DEBUG))
                                         .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4))
                                         .addLast(rpcClientHandler);
                             }
                         });
-                System.out.println("1111111111111");
                 ChannelFuture channelFuture = bootstrap.connect(addr, port).sync();
-                System.out.println("2222222222222");
                 channelFuture.channel().closeFuture().sync();
             } finally {
-                System.out.println("3333333333333");
                 eventLoopGroup.shutdownGracefully();
             }
-            System.out.println("44444444444444444");
             return rpcClientHandler.getResult();
         });
         return (T) instance;

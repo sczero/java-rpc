@@ -1,13 +1,15 @@
 package com.github.sczero.java.rpc.client;
 
 import com.github.sczero.java.rpc.constant.RpcConstant;
+import com.github.sczero.java.rpc.exception.RpcException;
+import com.github.sczero.java.rpc.utils.ClassUtil;
 import com.github.sczero.java.rpc.utils.HessianUtil;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 
 public class RpcClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
@@ -15,7 +17,9 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private final Method method;
     private final Object[] paramObjects;
     private final Class<?>[] paramTypes;
+    private volatile boolean invokeSuccess;
     private volatile Object result;
+    private volatile Exception resultEx;
 
     public RpcClientHandler(Class<?> clazz, Method method, Object[] args) {
         this.clazz = clazz;
@@ -26,8 +30,6 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-        System.out.println("RpcClientHandler#channelActive");
-
         ByteBuf buf = ctx.alloc().buffer();
 
         int payloadLength = 0;
@@ -75,10 +77,34 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
         //解析数据
         int payloadLength = msg.readInt();
-        result = msg.readBytes(payloadLength).toString(StandardCharsets.UTF_8);
+        int version = msg.readInt();
+        this.invokeSuccess = msg.readBoolean();
+        if (this.invokeSuccess) {
+            int i = msg.readInt();
+            if (i == 0) {
+                this.result = null;
+            } else {
+                String resultClazz = new String(ByteBufUtil.getBytes(msg.readBytes(i)));
+                this.result = HessianUtil.convertBytes2Object(ByteBufUtil.getBytes(msg.readBytes(msg.readInt())), ClassUtil.forName(resultClazz));
+            }
+        } else {
+            String exceptionClazz = new String(ByteBufUtil.getBytes(msg.readBytes(msg.readInt())));
+            String exceptionMsg = new String(ByteBufUtil.getBytes(msg.readBytes(msg.readInt())));
+            try {
+                this.resultEx = (Exception) ClassUtil.forName(exceptionClazz)
+                        .getConstructor(String.class)
+                        .newInstance(exceptionMsg);
+            } catch (ClassNotFoundException e) {
+                this.resultEx = new RpcException(exceptionMsg);
+            }
+        }
     }
 
-    public Object getResult() {
-        return result;
+    public Object getResult() throws Exception {
+        if (invokeSuccess) {
+            return result;
+        } else {
+            throw resultEx;
+        }
     }
 }
