@@ -1,6 +1,6 @@
 package com.github.sczero.java.rpc.server;
 
-import com.github.sczero.java.rpc.service.HelloService;
+import com.github.sczero.java.rpc.sample.service.HelloService;
 import junit.framework.TestCase;
 
 import java.lang.reflect.Method;

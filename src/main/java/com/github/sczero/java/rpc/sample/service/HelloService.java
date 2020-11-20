@@ -1,4 +1,4 @@
-package com.github.sczero.java.rpc.service;
+package com.github.sczero.java.rpc.sample.service;
 
 public interface HelloService {
     

@@ -6,15 +6,13 @@ import com.github.sczero.java.rpc.utils.ExceptionUtil;
 import com.github.sczero.java.rpc.utils.HessianUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 
+@ChannelHandler.Sharable
 public class RpcServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private final ConcurrentHashMap<Class<?>, Object> factory;
 

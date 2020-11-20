@@ -23,6 +23,7 @@ public class RpcServer {
     public void start(int port) throws InterruptedException {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup(100);
+        RpcServerHandler rpcServerHandler = new RpcServerHandler(factory);
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup)
@@ -33,7 +34,7 @@ public class RpcServer {
                             System.out.println("initChannel" + ch);
                             ch.pipeline()
                                     .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4))
-                                    .addLast(new RpcServerHandler(factory));
+                                    .addLast(rpcServerHandler);
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
