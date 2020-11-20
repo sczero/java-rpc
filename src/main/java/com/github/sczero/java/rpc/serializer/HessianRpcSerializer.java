@@ -1,4 +1,4 @@
-package com.github.sczero.java.rpc.utils;
+package com.github.sczero.java.rpc.serializer;
 
 import com.caucho.hessian.io.Hessian2Input;
 import com.caucho.hessian.io.Hessian2Output;
@@ -8,8 +8,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class HessianUtil {
-    public static byte[] convertObject2Bytes(Object obj) {
+public class HessianRpcSerializer implements RpcSerializer {
+    @Override
+    public byte[] serialize(Object obj) {
         byte[] bytes;
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             Hessian2Output output = new Hessian2Output(outputStream);
@@ -17,13 +18,17 @@ public class HessianUtil {
             output.flush();
             return outputStream.toByteArray();
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RpcException("无法转换对象2Byte:" + obj);
+            throw new RpcException("hessian serialize error:" + e.getMessage());
         }
     }
 
-    public static Object convertBytes2Object(byte[] bytes, Class<?> clazz) throws IOException {
+    @Override
+    public <T> T deserialize(byte[] bytes, Class<T> clazz) {
         Hessian2Input in = new Hessian2Input(new ByteArrayInputStream(bytes));
-        return in.readObject(clazz);
+        try {
+            return (T) in.readObject(clazz);
+        } catch (IOException e) {
+            throw new RpcException("hessian deserialize error:" + e.getMessage());
+        }
     }
 }
