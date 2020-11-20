@@ -17,6 +17,7 @@ public class HessianUtil {
             output.flush();
             return outputStream.toByteArray();
         } catch (Exception e) {
+            e.printStackTrace();
             throw new RpcException("无法转换对象2Byte:" + obj);
         }
     }
