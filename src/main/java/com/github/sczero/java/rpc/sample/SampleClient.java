@@ -12,10 +12,12 @@ public class SampleClient {
 //            long start = System.currentTimeMillis();
 //            String world = helloService.say("this is test from client", i);
 //            double end = (System.currentTimeMillis() - start);
-////            System.out.println("返回:" + world);
 //            System.out.println("耗时:" + end + "ms");
 //        }
         Person person = helloService.sayNothing();
         System.out.println(person);
+        person = helloService.sayPerson(person);
+        System.out.println(person);
+//        helloService.say("123");
     }
 }

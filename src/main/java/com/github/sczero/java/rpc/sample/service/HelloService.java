@@ -9,4 +9,6 @@ public interface HelloService {
     String say(String sth);
 
     Person sayNothing();
+
+    Person sayPerson(Person person);
 }

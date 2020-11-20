@@ -4,6 +4,7 @@ import com.github.sczero.java.rpc.constant.RpcConstant;
 import com.github.sczero.java.rpc.exception.RpcException;
 import com.github.sczero.java.rpc.utils.ClassUtil;
 import com.github.sczero.java.rpc.utils.HessianUtil;
+import com.github.sczero.java.rpc.utils.KryoUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
@@ -62,7 +63,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
             buf.writeBytes(paramNameContent);
             payloadLength += (paramNameContent.length);
 
-            byte[] objectBytes = HessianUtil.convertObject2Bytes(paramObjects[i]);
+            byte[] objectBytes = KryoUtil.convertObject2Bytes(paramObjects[i]);
             buf.writeInt(objectBytes.length);
             payloadLength += (RpcConstant.INT_SIZE);
             buf.writeBytes(objectBytes);
@@ -85,7 +86,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
                 this.result = null;
             } else {
                 String resultClazz = new String(ByteBufUtil.getBytes(msg.readBytes(i)));
-                this.result = HessianUtil.convertBytes2Object(ByteBufUtil.getBytes(msg.readBytes(msg.readInt())), ClassUtil.forName(resultClazz));
+                this.result = KryoUtil.convertBytes2Object(ByteBufUtil.getBytes(msg.readBytes(msg.readInt())), ClassUtil.forName(resultClazz));
             }
         } else {
             String exceptionClazz = new String(ByteBufUtil.getBytes(msg.readBytes(msg.readInt())));

@@ -25,7 +25,16 @@ public class HelloServiceImpl implements HelloService {
         Person person = new Person();
         person.setName("奥术大师多");
         person.setAgeInt(1);
-        person.setAgeInteger(123);
-        return null;
+        person.setAgeInteger(1);
+        return person;
+    }
+
+    @Override
+    public Person sayPerson(Person person) {
+        Person person1 = new Person();
+        person1.setName(person.getName() + "back");
+        person1.setAgeInt(person.getAgeInt() + 1);
+        person1.setAgeInteger(person.getAgeInteger() + 2);
+        return person1;
     }
 }
