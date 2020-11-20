@@ -22,7 +22,7 @@ public class RpcServer {
 
     public void start(int port) throws InterruptedException {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
-        EventLoopGroup workerGroup = new NioEventLoopGroup(10);
+        EventLoopGroup workerGroup = new NioEventLoopGroup(100);
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workerGroup)
@@ -30,6 +30,7 @@ public class RpcServer {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) {
+                            System.out.println("initChannel" + ch);
                             ch.pipeline()
                                     .addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4))
                                     .addLast(new RpcServerHandler(factory));
@@ -38,7 +39,9 @@ public class RpcServer {
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture channelFuture = bootstrap.bind(port).sync();
+            System.out.println("RpcServer启动");
             channelFuture.channel().closeFuture().sync();
+            System.out.println("RpcServer关闭");
         } finally {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();

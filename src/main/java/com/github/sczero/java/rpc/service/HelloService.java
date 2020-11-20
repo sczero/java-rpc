@@ -1,5 +1,8 @@
 package com.github.sczero.java.rpc.service;
 
 public interface HelloService {
-    String say(String sth, int times);
+    
+    String say(String sth, int times) throws InterruptedException;
+
+    String say(String sth);
 }

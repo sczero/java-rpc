@@ -24,7 +24,6 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-        System.out.println("总长度：" + msg.readableBytes());
         //解析数据
         int payloadLength = msg.readInt();
         int version = msg.readInt();
@@ -53,9 +52,6 @@ public class RpcServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
             exceptionClazz = targetException.getClass();
             exceptionMsg = ExceptionUtil.getStackTrace(targetException);
         }
-        System.out.println("调用方法结果:" + resultObject);
-        System.out.println("调用方法异常:" + exceptionClazz);
-        System.out.println("调用方法异常消息:" + exceptionMsg);
 
         ByteBuf buf = ctx.alloc().buffer();
         payloadLength = 0;
