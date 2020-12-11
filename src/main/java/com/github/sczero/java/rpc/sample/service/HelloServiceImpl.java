@@ -2,7 +2,9 @@ package com.github.sczero.java.rpc.sample.service;
 
 import com.github.sczero.java.rpc.exception.RpcException;
 import com.github.sczero.java.rpc.sample.model.Person;
+import com.github.sczero.java.rpc.spring.RpcService;
 
+@RpcService
 public class HelloServiceImpl implements HelloService {
     @Override
     public String say(String sth, int times) throws InterruptedException {

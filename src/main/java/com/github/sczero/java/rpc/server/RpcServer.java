@@ -40,7 +40,7 @@ public class RpcServer {
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.SO_KEEPALIVE, true);
             ChannelFuture channelFuture = bootstrap.bind(port).sync();
-            System.out.println("RpcServer启动");
+            System.out.println("RpcServer启动:" + port);
             channelFuture.channel().closeFuture().sync();
             System.out.println("RpcServer关闭");
         } finally {
