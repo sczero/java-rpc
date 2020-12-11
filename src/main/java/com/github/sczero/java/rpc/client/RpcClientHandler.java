@@ -2,7 +2,7 @@ package com.github.sczero.java.rpc.client;
 
 import com.github.sczero.java.rpc.constant.RpcConstant;
 import com.github.sczero.java.rpc.exception.RpcException;
-import com.github.sczero.java.rpc.serializer.RpcSerializer;
+import com.github.sczero.java.rpc.serializer.RpcSerializerFactory;
 import com.github.sczero.java.rpc.utils.ClassUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -15,8 +15,8 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     private final Class<?> clazz;
     private final Method method;
-    private final Object[] paramObjects;
-    private final Class<?>[] paramTypes;
+    private final Object[] parameters;
+    private final Class<?>[] parameterTypes;
     private volatile boolean invokeSuccess;
     private volatile Object result;
     private volatile Exception resultEx;
@@ -24,8 +24,8 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
     public RpcClientHandler(Class<?> clazz, Method method, Object[] args) {
         this.clazz = clazz;
         this.method = method;
-        this.paramObjects = args;
-        this.paramTypes = method.getParameterTypes();
+        this.parameters = args;
+        this.parameterTypes = method.getParameterTypes();
     }
 
     @Override
@@ -51,18 +51,18 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
         buf.writeBytes(methodContent);
         payloadLength += (methodContent.length);
 
-        buf.writeInt(paramObjects.length);//参数个数
+        buf.writeInt(parameters.length);//参数个数
         payloadLength += (RpcConstant.INT_SIZE);
 
-        for (int i = 0; i < paramObjects.length; i++) {
-            String paramName = paramTypes[i].getName();
+        for (int i = 0; i < parameters.length; i++) {
+            String paramName = parameterTypes[i].getName();
             byte[] paramNameContent = paramName.getBytes();
             buf.writeInt(paramNameContent.length);
             payloadLength += (RpcConstant.INT_SIZE);
             buf.writeBytes(paramNameContent);
             payloadLength += (paramNameContent.length);
 
-            byte[] objectBytes = RpcSerializer.DEFAULT.serialize(paramObjects[i]);
+            byte[] objectBytes = RpcSerializerFactory.getInstance().serialize(parameters[i]);
             buf.writeInt(objectBytes.length);
             payloadLength += (RpcConstant.INT_SIZE);
             buf.writeBytes(objectBytes);
@@ -85,7 +85,7 @@ public class RpcClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
                 this.result = null;
             } else {
                 String resultClazz = new String(ByteBufUtil.getBytes(msg.readBytes(i)));
-                this.result = RpcSerializer.DEFAULT.deserialize(ByteBufUtil.getBytes(msg.readBytes(msg.readInt())), ClassUtil.forName(resultClazz));
+                this.result = RpcSerializerFactory.getInstance().deserialize(ByteBufUtil.getBytes(msg.readBytes(msg.readInt())), ClassUtil.forName(resultClazz));
             }
         } else {
             String exceptionClazz = new String(ByteBufUtil.getBytes(msg.readBytes(msg.readInt())));
