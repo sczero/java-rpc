@@ -1,19 +1,20 @@
-package com.github.sczero.java.rpc.spring;
+package com.github.sczero.java.rpc.spring.initializer;
 
 import com.github.sczero.java.rpc.client.RpcClient;
+import com.github.sczero.java.rpc.spring.annotation.RpcReference;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
 import java.lang.reflect.Field;
 
-public class RpcServiceRefBeanPostProcessor implements BeanPostProcessor {
+public class RpcReferenceHandler implements BeanPostProcessor {
     private final RpcClient rpcClient = new RpcClient("127.0.0.1", 8081);
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
         for (Field field : bean.getClass().getDeclaredFields()) {
             field.setAccessible(true);
-            RpcServiceRef rpcServiceRef = field.getDeclaredAnnotation(RpcServiceRef.class);
+            RpcReference rpcServiceRef = field.getDeclaredAnnotation(RpcReference.class);
             if (rpcServiceRef != null) {
                 try {
                     Object ref = field.get(bean);

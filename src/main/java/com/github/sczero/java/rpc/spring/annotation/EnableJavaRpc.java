@@ -1,5 +1,8 @@
-package com.github.sczero.java.rpc.spring;
+package com.github.sczero.java.rpc.spring.annotation;
 
+import com.github.sczero.java.rpc.spring.initializer.RpcReferenceHandler;
+import com.github.sczero.java.rpc.spring.initializer.RpcServerInitializer;
+import com.github.sczero.java.rpc.spring.initializer.RpcServiceHandler;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
@@ -11,7 +14,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import({RpcServiceRegistrar.class, RpcServiceRefBeanPostProcessor.class, JavaRpcInitializer.class})
+@Import({RpcServiceHandler.class, RpcReferenceHandler.class, RpcServerInitializer.class})
 public @interface EnableJavaRpc {
     String[] basePackages() default {};
 }

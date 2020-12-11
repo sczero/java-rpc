@@ -1,4 +1,4 @@
-package com.github.sczero.java.rpc.spring;
+package com.github.sczero.java.rpc.spring.annotation;
 
 import java.lang.annotation.*;
 

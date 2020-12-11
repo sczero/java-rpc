@@ -2,7 +2,7 @@ package com.github.sczero.java.rpc.sample.service;
 
 import com.github.sczero.java.rpc.exception.RpcException;
 import com.github.sczero.java.rpc.sample.model.Person;
-import com.github.sczero.java.rpc.spring.RpcService;
+import com.github.sczero.java.rpc.spring.annotation.RpcService;
 
 @RpcService
 public class HelloServiceImpl implements HelloService {

@@ -1,6 +1,7 @@
-package com.github.sczero.java.rpc.spring;
+package com.github.sczero.java.rpc.spring.initializer;
 
 import com.github.sczero.java.rpc.server.RpcServer;
+import com.github.sczero.java.rpc.spring.annotation.RpcService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class JavaRpcInitializer implements ApplicationContextAware, EnvironmentAware, Lifecycle {
+public class RpcServerInitializer implements ApplicationContextAware, EnvironmentAware, Lifecycle {
 
     private final RpcServer rpcServer = new RpcServer();
     private ApplicationContext applicationContext;

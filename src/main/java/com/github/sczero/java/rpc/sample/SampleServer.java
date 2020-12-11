@@ -1,6 +1,6 @@
 package com.github.sczero.java.rpc.sample;
 
-import com.github.sczero.java.rpc.spring.EnableJavaRpc;
+import com.github.sczero.java.rpc.spring.annotation.EnableJavaRpc;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
